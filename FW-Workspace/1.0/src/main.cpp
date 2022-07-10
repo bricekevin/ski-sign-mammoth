@@ -1,9 +1,20 @@
+#include "WiFiManager.h"
+//WiFiManager wifiManager;
+WiFiManager wm;
+
+#define WEBSERVER_H
+#include "ESPAsyncWebServer.h"
+
+
+
+
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
+//#include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <FastLED.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+//#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include "OTA.h"
 unsigned long prevMillisHttp=0;
 // #include <ESPAsyncWebServer.h>
@@ -14,8 +25,8 @@ String response = "";
 WiFiClientSecure client;
 HTTPClient https;
 String payload1;
-#define LED_PIN 12
-#define COLOR_ORDER GRB
+#define LED_PIN 10
+#define COLOR_ORDER RGB
 #define CHIPSET WS2811
 #define NUM_LEDS 25
 #define BRIGHTNESS 100
@@ -51,7 +62,7 @@ void setup(void)
 
   Serial.begin(115200);
   WiFi.mode(WIFI_STA);
-  WiFiManager wm;
+  //WiFiManager wm;
   bool res;
   res = wm.autoConnect("SETUP BRICE SKI", "12345678"); // password protected ap
 
