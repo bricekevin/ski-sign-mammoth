@@ -1,6 +1,6 @@
 #include "WiFiManager.h"
 //WiFiManager wifiManager;
-WiFiManager wm;
+//WiFiManager wm;
 
 #define WEBSERVER_H
 #include "ESPAsyncWebServer.h"
@@ -61,8 +61,19 @@ void setup(void)
 {
 
   Serial.begin(115200);
+  Serial.println("Setup Starting Delay");
+
+
+
+  delay(1000);
+
+
   WiFi.mode(WIFI_STA);
-  //WiFiManager wm;
+  WiFiManager wm;
+    Serial.println("Post wm Initialization Delay");
+
+    delay(1000);
+
   bool res;
   res = wm.autoConnect("SETUP BRICE SKI", "12345678"); // password protected ap
 

@@ -10,8 +10,8 @@
 String FirmwareVer = {
   "1.0"// While loop eleminated from wifi connect. Onboard wifi indication
 };
-#define URL_fw_Version "https://github.com/bricekevin/ski-sign-mammoth/blob/main/PROD/version.txt"
-#define URL_fw_Bin "https://github.com/bricekevin/ski-sign-mammoth/blob/main/PROD/firmware.bin"
+#define URL_fw_Version "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/version.txt"
+#define URL_fw_Bin "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/firmware.bin"
 
 
 
@@ -66,7 +66,7 @@ void IRAM_ATTR isr() {
 
 void setupOTA() {
 
-  Serial.print("Active firmware version:");
+  Serial.print("Active firmware version: ");
   Serial.println(FirmwareVer);
   pinMode(2, OUTPUT);
 }
