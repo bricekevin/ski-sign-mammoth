@@ -61,7 +61,7 @@ void setup(void)
 {
 
   Serial.begin(115200);
-  Serial.println("Setup Starting Delay");
+  Serial.println("---Setup Starting Delay 1000 ---");
 
 
 
@@ -70,7 +70,7 @@ void setup(void)
 
   WiFi.mode(WIFI_STA);
   WiFiManager wm;
-    Serial.println("Post wm Initialization Delay");
+    Serial.println("--- Post WM Initialization Delay 1000 ---");
 
     delay(1000);
 
@@ -79,27 +79,35 @@ void setup(void)
 
   if (!res)
   {
-    Serial.println("Failed to connect");
+    Serial.println("--- Failed to connect--- ");
     // ESP.restart();
   }
   else
   {
     // if you get here you have connected to the WiFi
-    Serial.println("CONNECTED.... :)");
+    Serial.println("--- CONNECTED.... :)");
     setupOTA();
    CHK_FIRMWARE();
+       Serial.println("--- DONE OTA--- ");
+
   }
 
   // ----- ----- Fast LED Setup ----- ----- //
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
+         Serial.println("--- DONE FAST LED--- ");
+
   // ----- ----- END Fast LED Setup ----- ----- //
 }
 
 void loop(void)
 {
+           Serial.println("--- START OF LOOP ---");
+
 if(millis()-prevMillisHttp>20000)
 {
+             Serial.println("MILLS > 20000");
+
   String path = "https://alterra.te2.biz/v1/conditions/ALT_MAM/lifts";
   String hostname = "alterra.te2.biz";
   client.setCACert(ca_cert);

@@ -66,7 +66,7 @@ void IRAM_ATTR isr() {
 
 void setupOTA() {
 
-  Serial.print("Active firmware version: ");
+  Serial.print("OTA: Active firmware version: ");
   Serial.println(FirmwareVer);
   pinMode(2, OUTPUT);
 }
@@ -86,30 +86,33 @@ void firmwareUpdate(void) {
 
   switch (ret) {
   case HTTP_UPDATE_FAILED:
-    Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+    Serial.printf("OTA: HTTP_UPDATE_FAILD Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
     break;
 
   case HTTP_UPDATE_NO_UPDATES:
-    Serial.println("HTTP_UPDATE_NO_UPDATES");
+    Serial.println("OTA: HTTP_UPDATE_NO_UPDATES");
     break;
 
   case HTTP_UPDATE_OK:
-    Serial.println("HTTP_UPDATE_OK");
+    Serial.println("OTA: HTTP_UPDATE_OK");
     break;
   }
 }
 int FirmwareVersionCheck(void) {
+  Serial.println("OTA: --- START FW VERSION CHECK ---");
   String payload;
   int httpCode;
   String fwurl = "";
   fwurl += URL_fw_Version;
   fwurl += "?";
   fwurl += String(rand());
+  Serial.print("OTA: ");
   Serial.println(fwurl);
   WiFiClientSecure * client = new WiFiClientSecure;
 
   if (client) 
   {
+    Serial.println("OTA: --- START CLIENT ---");
     client -> setCACert(rootCACertificate);
 
     // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
@@ -117,13 +120,14 @@ int FirmwareVersionCheck(void) {
 
     if (https.begin( * client, fwurl)) 
     { // HTTPS      
-      Serial.print("[HTTPS] GET...\n");
+      Serial.print("OTA: [HTTPS] GET...\n");
       // start connection and send HTTP header
-      delay(100);
+      delay(1000);
       httpCode = https.GET();
-      delay(100);
+      delay(1000);
       if (httpCode == HTTP_CODE_OK) // if version received
       {
+        Serial.print("OTA: [HTTPS] GET...\n");
         payload = https.getString(); // save received version
       } else {
         Serial.print("error in downloading version file:");
