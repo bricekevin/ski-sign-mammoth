@@ -8,10 +8,10 @@
 
 //https://github.com/inteliqoiq/ESP32_OTA/blob/main/firmware.bin
 String FirmwareVer = {
-  "1.9"// While loop eleminated from wifi connect. Onboard wifi indication
+  "1.1"// While loop eleminated from wifi connect. Onboard wifi indication
 };
-#define URL_fw_Version "https://raw.githubusercontent.com/inteliqoiq/ESP32_OTA/master/version.txt"
-#define URL_fw_Bin "https://raw.githubusercontent.com/inteliqoiq/ESP32_OTA/master/firmware.bin"
+#define URL_fw_Version "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/version.txt"
+#define URL_fw_Bin "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/firmware.bin"
 
 
 

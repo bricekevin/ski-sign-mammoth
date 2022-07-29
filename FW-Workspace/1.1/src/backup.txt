@@ -1,20 +1,9 @@
-#include "WiFiManager.h"
-//WiFiManager wifiManager;
-//WiFiManager wm;
-
-#define WEBSERVER_H
-#include "ESPAsyncWebServer.h"
-
-
-
-
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
-//#include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <FastLED.h>
-//#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include "OTA.h"
 unsigned long prevMillisHttp=0;
 // #include <ESPAsyncWebServer.h>
@@ -25,13 +14,14 @@ String response = "";
 WiFiClientSecure client;
 HTTPClient https;
 String payload1;
-#define LED_PIN 10
+#define LED_PIN 12
 #define COLOR_ORDER RGB
 #define CHIPSET WS2811
 #define NUM_LEDS 25
 #define BRIGHTNESS 100
 #define FRAMES_PER_SECOND 60
 bool gReverseDirection = false;
+bool firstLoop = true;
 
 CRGB leds[NUM_LEDS];
 
@@ -57,58 +47,51 @@ const char *ca_cert =
     "rqXRfboQnoZsG4q5WTP468SQvvG5\n"
     "-----END CERTIFICATE-----\n";
 
+
+
+
+
 void setup(void)
 {
 
   Serial.begin(115200);
-  Serial.println("---Setup Starting Delay 1000 ---");
-
-
-
-  delay(1000);
-
-// WiFi.disconnect(); //no change 
-
   WiFi.mode(WIFI_STA);
   WiFiManager wm;
-    Serial.println("--- Post WM Initialization Delay 1000 ---");
-
-    delay(1000);
-
   bool res;
-  res = wm.autoConnect("SETUP BRICE SKI", "12345678"); // password protected ap
+  res = wm.autoConnect("SETUP BRICE SKI", "12345"); // password protected ap
 
   if (!res)
   {
-    Serial.println("--- Failed to connect--- ");
+    Serial.println("Failed to connect");
     // ESP.restart();
   }
   else
   {
     // if you get here you have connected to the WiFi
-    Serial.println("--- CONNECTED.... :)");
- //   setupOTA();
- //  CHK_FIRMWARE();
-       Serial.println("--- DONE OTA--- ");
-
+    Serial.println("CONNECTED.... :)");
+    setupOTA();
+   CHK_FIRMWARE();
   }
 
   // ----- ----- Fast LED Setup ----- ----- //
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
-         Serial.println("--- DONE FAST LED--- ");
-
   // ----- ----- END Fast LED Setup ----- ----- //
 }
 
+
+
+
+
+
+
+
+
 void loop(void)
 {
- //          Serial.println("--- START OF LOOP ---");
-
-if(millis()-prevMillisHttp>20000 && WiFi.isConnected()==true)
+if((millis()-prevMillisHttp>60000) || (firstLoop == true))
 {
-             Serial.println("MILLS > 20000");
-
+  firstLoop = false;  //first time make call then wait
   String path = "https://alterra.te2.biz/v1/conditions/ALT_MAM/lifts";
   String hostname = "alterra.te2.biz";
   client.setCACert(ca_cert);
@@ -158,40 +141,46 @@ if(millis()-prevMillisHttp>20000 && WiFi.isConnected()==true)
   for (int chair = 0; chair <= 24; chair++)
   {
 
-    Serial.print("Chair Sequence: ");
+    Serial.print("Chair Sequence Number: ");
     Serial.print(chair);
 
     if (doc["lifts"][chair]["statusLabel"] == "Open")
     {
-      Serial.println(" Open");
+      Serial.println(" - Open");
       leds[chair] = CRGB::Green;
       FastLED.show();
     }
 
     else if ((doc["lifts"][chair]["statusLabel"] == "Expected") || (doc["lifts"][chair]["statusLabel"] == "Hold") || (doc["lifts"][chair]["statusLabel"] == "Weather Hold") || (doc["lifts"][chair]["statusLabel"] == "Anticipated Weather Impact"))
     {
-      Serial.println(" Hold");
+      Serial.println(" - Hold");
       leds[chair] = CRGB::DarkBlue;
       FastLED.show();
     }
 
     else if (doc["lifts"][chair]["statusLabel"] == "Closed")
     {
-      Serial.println(" Closed");
+      Serial.println(" - Closed");
       leds[chair] = CRGB::Red;
       FastLED.show();
     }
-    Serial.println("After Last Color Else");
+
+    else
+    {
+      Serial.println(" - Closed");
+      leds[chair] = CRGB::Red;
+      FastLED.show();
+    }
+    //Serial.println("After Last Color Else");
   }
   }
   
-  Serial.println("After Close 24 For");
+  Serial.println("--- END OF CHAIR LOOP");
   https.end();
   client.stop();
   client.flush();
-  Serial.println("After HTTP END");
-  Serial.println("END LOOP");
- prevMillisHttp=millis();
+  Serial.println("--- After CLIENT: END, STOP, FLUSH");
+  prevMillisHttp=millis();
 }
 if(!WiFi.isConnected())
 {
