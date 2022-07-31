@@ -1,19 +1,17 @@
-//GET direct download link for github
-//https://gist.github.com/fedarko/4fc177cff9084b9e325dcbe954547edc
+// GET direct download link for github
+// https://gist.github.com/fedarko/4fc177cff9084b9e325dcbe954547edc
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
 #include <cert.h>
 
-//https://github.com/inteliqoiq/ESP32_OTA/blob/main/firmware.bin
+// https://github.com/inteliqoiq/ESP32_OTA/blob/main/firmware.bin
 String FirmwareVer = {
-  "1.1"// While loop eleminated from wifi connect. Onboard wifi indication
+    "1.1" // While loop eleminated from wifi connect. Onboard wifi indication
 };
 #define URL_fw_Version "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/version.txt"
 #define URL_fw_Bin "https://raw.githubusercontent.com/bricekevin/ski-sign-mammoth/main/PROD/firmware.bin"
-
-
 
 //#define URL_fw_Version "http://cade-make.000webhostapp.com/version.txt"
 //#define URL_fw_Bin "http://cade-make.000webhostapp.com/firmware.bin"
@@ -22,69 +20,57 @@ void connect_wifi();
 void firmwareUpdate();
 int FirmwareVersionCheck();
 
+void CHK_FIRMWARE()
+{
 
+  // save the last time you blinked the LED
 
-void CHK_FIRMWARE() {
-
-
-    // save the last time you blinked the LED
-
-    if (FirmwareVersionCheck()) {
-      firmwareUpdate();
-    }
+  if (FirmwareVersionCheck())
+  {
+    firmwareUpdate();
   }
+}
 
- 
- 
-  
-
-
-struct Button {
+struct Button
+{
   const uint8_t PIN;
   uint32_t numberKeyPresses;
   bool pressed;
 };
 
 Button button_boot = {
-  0,
-  0,
-  false
-};
+    0,
+    0,
+    false};
 /*void IRAM_ATTR isr(void* arg) {
     Button* s = static_cast<Button*>(arg);
     s->numberKeyPresses += 1;
     s->pressed = true;
 }*/
 
-void IRAM_ATTR isr() {
+void IRAM_ATTR isr()
+{
   button_boot.numberKeyPresses += 1;
   button_boot.pressed = true;
 }
 
-
-
-
-void setupOTA() {
+void setupOTA()
+{
 
   Serial.print("OTA: Active firmware version: ");
   Serial.println(FirmwareVer);
   pinMode(2, OUTPUT);
 }
 
-
-
-
-
-
-
-
-void firmwareUpdate(void) {
+void firmwareUpdate(void)
+{
   WiFiClientSecure client;
   client.setCACert(rootCACertificate);
   httpUpdate.setLedPin(2, LOW);
   t_httpUpdate_return ret = httpUpdate.update(client, URL_fw_Bin);
 
-  switch (ret) {
+  switch (ret)
+  {
   case HTTP_UPDATE_FAILED:
     Serial.printf("OTA: HTTP_UPDATE_FAILD Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
     break;
@@ -98,26 +84,27 @@ void firmwareUpdate(void) {
     break;
   }
 }
-int FirmwareVersionCheck(void) {
+int FirmwareVersionCheck(void)
+{
   String payload;
   int httpCode;
   String fwurl = "";
   fwurl += URL_fw_Version;
   fwurl += "?";
   fwurl += String(rand());
-  Serial.println(fwurl);
-  WiFiClientSecure * client = new WiFiClientSecure;
+  // Serial.println(fwurl);
+  WiFiClientSecure *client = new WiFiClientSecure;
 
-  if (client) 
+  if (client)
   {
-    client -> setCACert(rootCACertificate);
+    client->setCACert(rootCACertificate);
 
-    // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is 
+    // Add a scoping block for HTTPClient https to make sure it is destroyed before WiFiClientSecure *client is
     HTTPClient https;
 
-    if (https.begin( * client, fwurl)) 
-    { // HTTPS      
-      Serial.print("OTA: [HTTPS] GET...\n");
+    if (https.begin(*client, fwurl))
+    { // HTTPS
+      Serial.println("OTA: Trying to update firmware...");
       // start connection and send HTTP header
       delay(100);
       httpCode = https.GET();
@@ -125,28 +112,33 @@ int FirmwareVersionCheck(void) {
       if (httpCode == HTTP_CODE_OK) // if version received
       {
         payload = https.getString(); // save received version
-      } else {
-        Serial.print("OTA: error in downloading version file:");
+      }
+      else
+      {
+        Serial.print("OTA: error in downloading version file with code: ");
         Serial.println(httpCode);
       }
       https.end();
     }
     delete client;
   }
-      
+
   if (httpCode == HTTP_CODE_OK) // if version received
   {
     payload.trim();
-    if (payload.equals(FirmwareVer)) {
-      Serial.printf("\nOTA: Device already on latest firmware version:%s\n", FirmwareVer);
-      return 0;
-    } 
-    else 
+    if (payload.equals(FirmwareVer))
     {
+      Serial.print("OTA: Device already on latest firmware version: ");
+      Serial.println(FirmwareVer);
+      return 0;
+    }
+    else
+    {
+      Serial.print("OTA: New firmware detected!  Version: ");
       Serial.println(payload);
-      Serial.println("OTA: New firmware detected");
+
       return 1;
     }
-  } 
-  return 0;  
+  }
+  return 0;
 }
